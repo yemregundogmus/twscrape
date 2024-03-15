@@ -3,7 +3,7 @@ import email as emaillib
 import imaplib
 import os
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 
 from .logger import logger
 
@@ -51,12 +51,12 @@ def _wait_email_code(imap: imaplib.IMAP4_SSL, count: int, min_t: datetime | None
 
                 try:
                     msg_time = datetime.strptime(msg.get("Date", "").split(' (')[0], "%a, %d %b %Y %H:%M:%S %z")
-                    msg_time = msg_time.replace(tzinfo=None)
+                    msg_time = msg_time.astimezone(timezone.utc)
 
                 except ValueError:
                     try:
                         msg_time = datetime.strptime(msg.get("Date", "").split(' (')[0], "%a, %d %b %Y %H:%M:%S %Z")
-                        msg_time = msg_time.replace(tzinfo=None)
+                        msg_time = msg_time.astimezone(timezone.utc)
 
                     except:    
                         msg_time = msg.get("Date", "")
