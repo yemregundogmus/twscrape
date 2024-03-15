@@ -49,9 +49,10 @@ def _wait_email_code(imap: imaplib.IMAP4_SSL, count: int, min_t: datetime | None
             if isinstance(x, tuple):
                 msg = emaillib.message_from_bytes(x[1])
 
-                # https://www.ietf.org/rfc/rfc9051.html#section-6.3.12-13
-                msg_time = msg.get("Date", "").split("(")[0].strip()
-                msg_time = datetime.strptime(msg_time, "%a, %d %b %Y %H:%M:%S %z")
+                try:
+                    msg_time = datetime.strptime(msg.get("Date", "").split(' (')[0], "%a, %d %b %Y %H:%M:%S %z")
+                except ValueError:
+                    msg_time = msg.get("Date", "")
 
                 msg_from = str(msg.get("From", "")).lower()
                 msg_subj = str(msg.get("Subject", "")).lower()
