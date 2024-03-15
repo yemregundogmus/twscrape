@@ -52,7 +52,10 @@ def _wait_email_code(imap: imaplib.IMAP4_SSL, count: int, min_t: datetime | None
                 try:
                     msg_time = datetime.strptime(msg.get("Date", "").split(' (')[0], "%a, %d %b %Y %H:%M:%S %z")
                 except ValueError:
-                    msg_time = msg.get("Date", "")
+                    try:
+                        msg_time = datetime.strptime(msg.get("Date", "").split(' (')[0], "%a, %d %b %Y %H:%M:%S %Z")
+                    except:    
+                        msg_time = msg.get("Date", "")
 
                 msg_from = str(msg.get("From", "")).lower()
                 msg_subj = str(msg.get("Subject", "")).lower()
