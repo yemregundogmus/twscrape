@@ -90,7 +90,7 @@ async def imap_get_email_code(
             raise Exception("Failed to list folders")
 
         folders_to_check = [folder.decode().split(' "/" ')[1].strip('"') for folder in folders]
-
+        print(folders_to_check)
         for folder in folders_to_check:
             try:
                 imap.select(f'"{folder}"', readonly=True)
@@ -105,17 +105,16 @@ async def imap_get_email_code(
                 if code is not None:
                     return code
 
-                if TWS_WAIT_EMAIL_CODE < time.time() - start_time:
-                    raise EmailCodeTimeoutError(f"Email code timeout ({TWS_WAIT_EMAIL_CODE} sec)")
+                await asyncio.sleep(3)
+        
+        if TWS_WAIT_EMAIL_CODE < time.time() - start_time:
+            raise EmailCodeTimeoutError(f"Email code timeout ({TWS_WAIT_EMAIL_CODE} sec)")
 
-                await asyncio.sleep(5)
     except Exception as e:
         logger.error(f"An error occurred: {e}")
+        print(f"An error occurred: {e}")
         imap.close()
         raise e
-    finally:
-        # Son olarak INBOX'a geri dön
-        imap.select("INBOX")
 
 
 async def imap_login(email: str, password: str):
