@@ -84,7 +84,7 @@ async def imap_get_email_code(
         logger.info(f"Waiting for confirmation code for {email}...")
         start_time = time.time()
         # Spam klasörü adlarını buraya ekleyin
-        spam_folder_names = ["Spam", "Junk", "SPAM", "JUNK"]
+        spam_folder_names = ['Spam', 'DraftBox', 'Trash', 'SentBox', 'INBOX']
         folders_to_check = ["INBOX"] + spam_folder_names
         
         for folder in folders_to_check:
