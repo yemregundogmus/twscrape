@@ -83,19 +83,30 @@ async def imap_get_email_code(
     try:
         logger.info(f"Waiting for confirmation code for {email}...")
         start_time = time.time()
-        while True:
-            _, rep = imap.select("INBOX")
-            msg_count = int(rep[0].decode("utf-8")) if len(rep) > 0 and rep[0] is not None else 0
-            code = _wait_email_code(imap, msg_count, min_t)
-            if code is not None:
-                return code
+        # Spam klasörü adlarını buraya ekleyin
+        spam_folder_names = ["Spam", "Junk", "SPAM", "JUNK"]
+        folders_to_check = ["INBOX"] + spam_folder_names
+        
+        for folder in folders_to_check:
+            try:
+                imap.select(folder, readonly=True)
+            except Exception as e:
+                logger.error(f"Error selecting folder {folder}: {e}")
+                continue  # Eğer klasör seçilemezse diğer klasöre geç
 
-            if TWS_WAIT_EMAIL_CODE < time.time() - start_time:
-                raise EmailCodeTimeoutError(f"Email code timeout ({TWS_WAIT_EMAIL_CODE} sec)")
+            while True:
+                _, rep = imap.search(None, 'ALL')
+                msg_numbers = rep[0].split()
+                code = _wait_email_code(imap, len(msg_numbers), min_t)
+                if code is not None:
+                    return code
 
-            await asyncio.sleep(5)
+                if TWS_WAIT_EMAIL_CODE < time.time() - start_time:
+                    raise EmailCodeTimeoutError(f"Email code timeout ({TWS_WAIT_EMAIL_CODE} sec)")
+
+                await asyncio.sleep(5)
     except Exception as e:
-        imap.select("INBOX")
+        imap.select("INBOX")  # Hata durumunda INBOX'a geri dön
         imap.close()
         raise e
 
