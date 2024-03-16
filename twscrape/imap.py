@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 
 from .logger import logger
 
-TWS_WAIT_EMAIL_CODE = [os.getenv("TWS_WAIT_EMAIL_CODE"), os.getenv("LOGIN_CODE_TIMEOUT"), 30]
+TWS_WAIT_EMAIL_CODE = [os.getenv("TWS_WAIT_EMAIL_CODE"), os.getenv("LOGIN_CODE_TIMEOUT"), 90]
 TWS_WAIT_EMAIL_CODE = [int(x) for x in TWS_WAIT_EMAIL_CODE if x is not None][0]
 
 
