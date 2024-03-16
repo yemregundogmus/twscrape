@@ -82,12 +82,7 @@ async def imap_get_email_code(
 ) -> str:
     try:
         logger.info(f"Waiting for confirmation code for {email}...")
-        start_time = time.time()
-
-        # IMAP hesabındaki tüm klasörleri al
-        typ, folders = imap.list()
-        if typ != 'OK':
-            raise Exception("Failed to list folders")
+        overall_start_time = time.time()
 
         folders_to_check = ['Spam', 'INBOX']
         for folder in folders_to_check:
@@ -98,6 +93,7 @@ async def imap_get_email_code(
                 print(f"Error selecting folder {folder}: {e}")
                 continue  # Eğer klasör seçilemezse diğer klasöre geç
 
+            start_time = time.time()  # Her klasör için kontrol başlangıcında zamanı kaydet
             while True:
                 _, rep = imap.search(None, 'ALL')
                 msg_numbers = rep[0].split()
@@ -105,11 +101,12 @@ async def imap_get_email_code(
                 if code is not None:
                     return code
 
-                await asyncio.sleep(3)
-        
-        if TWS_WAIT_EMAIL_CODE < time.time() - start_time:
-            raise EmailCodeTimeoutError(f"Email code timeout ({TWS_WAIT_EMAIL_CODE} sec)")
+                elapsed_time = time.time() - start_time
+                overall_elapsed_time = time.time() - overall_start_time
+                if elapsed_time > TWS_WAIT_EMAIL_CODE or overall_elapsed_time > TWS_WAIT_EMAIL_CODE:
+                    raise EmailCodeTimeoutError(f"Email code timeout ({TWS_WAIT_EMAIL_CODE} sec)")
 
+                await asyncio.sleep(3)
     except Exception as e:
         logger.error(f"An error occurred: {e}")
         print(f"An error occurred: {e}")
