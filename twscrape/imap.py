@@ -61,8 +61,6 @@ def _wait_email_code(imap: imaplib.IMAP4_SSL, count: int, min_t: datetime | None
                     except:    
                         msg_time = msg.get("Date", "")
 
-                print("MSGTİME", msg_time)
-
                 msg_from = str(msg.get("From", "")).lower()
                 msg_subj = str(msg.get("Subject", "")).lower()
                 logger.info(f"({i} of {count}) {msg_from} - {msg_time} - {msg_subj}")
@@ -85,7 +83,7 @@ async def imap_get_email_code(
         logger.info(f"Waiting for confirmation code for {email}...")
         overall_start_time = time.time()
 
-        folders_to_check = ['Spam', 'INBOX']
+        folders_to_check = ['Spam', 'INBOX', "SPAM"]
         for folder in folders_to_check:
             try:
                 response, _ = imap.select(f'"{folder}"', readonly=True)
