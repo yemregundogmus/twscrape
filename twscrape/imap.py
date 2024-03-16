@@ -89,13 +89,13 @@ async def imap_get_email_code(
         if typ != 'OK':
             raise Exception("Failed to list folders")
 
-        folders_to_check = [folder.decode().split(' "/" ')[1].strip('"') for folder in folders]
-        print(folders_to_check)
+        folders_to_check = ['Spam', 'INBOX']
         for folder in folders_to_check:
             try:
-                imap.select(f'"{folder}"', readonly=True)
+                imap.select(f'{folder}', readonly=True)
             except Exception as e:
                 logger.error(f"Error selecting folder {folder}: {e}")
+                print(f"Error selecting folder {folder}: {e}")
                 continue  # Eğer klasör seçilemezse diğer klasöre geç
 
             while True:
