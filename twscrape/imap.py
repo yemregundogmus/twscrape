@@ -83,13 +83,17 @@ async def imap_get_email_code(
     try:
         logger.info(f"Waiting for confirmation code for {email}...")
         start_time = time.time()
-        # Spam klasörü adlarını buraya ekleyin
-        spam_folder_names = ['Spam', 'DraftBox', 'Trash', 'SentBox', 'INBOX']
-        folders_to_check = ["INBOX"] + spam_folder_names
-        
+
+        # IMAP hesabındaki tüm klasörleri al
+        typ, folders = imap.list()
+        if typ != 'OK':
+            raise Exception("Failed to list folders")
+
+        folders_to_check = [folder.decode().split(' "/" ')[1].strip('"') for folder in folders]
+
         for folder in folders_to_check:
             try:
-                imap.select(folder, readonly=True)
+                imap.select(f'"{folder}"', readonly=True)
             except Exception as e:
                 logger.error(f"Error selecting folder {folder}: {e}")
                 continue  # Eğer klasör seçilemezse diğer klasöre geç
@@ -106,9 +110,12 @@ async def imap_get_email_code(
 
                 await asyncio.sleep(5)
     except Exception as e:
-        imap.select("INBOX")  # Hata durumunda INBOX'a geri dön
+        logger.error(f"An error occurred: {e}")
         imap.close()
         raise e
+    finally:
+        # Son olarak INBOX'a geri dön
+        imap.select("INBOX")
 
 
 async def imap_login(email: str, password: str):
